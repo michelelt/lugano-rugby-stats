@@ -10,7 +10,7 @@ from preprocessing import crea_dataframe_giocatori
 # --------------------------
 # Configurazione della pagina
 # --------------------------
-st.set_page_config(page_title="Dashboard Statistiche Lugano", layout="wide")
+st.set_page_config(page_title="Statistiche Lugano Rugby", layout="wide")
 
 # --------------------------
 # Caricamento Dati
@@ -22,7 +22,7 @@ def load_data(path):
 file_path = './data/lugano_stats.xlsx'
 df = load_data(file_path)
 
-st.title("🏉 Dashboard Statistiche Lugano")
+st.title("Statistiche Lugano Rugby")
 
 # Otteniamo tutte le colonne numeriche delle statistiche
 stats_columns = [col for col in df.columns if col != 'Nome Giocatore']
@@ -30,7 +30,7 @@ stats_columns = [col for col in df.columns if col != 'Nome Giocatore']
 # --------------------------
 # Sezione 1: Top 10 Treemap (Su 2 righe)
 # --------------------------
-st.header("🏆 Top 10 per ogni Statistica (Treemap)")
+st.header("🏆 Top 10 per ogni Statistica")
 st.markdown("*I rettangoli più grandi e luminosi indicano i valori più alti nella Top 10.*")
 
 n_stats = len(stats_columns)
@@ -74,38 +74,9 @@ if len(stats_riga_2) > 0:
 
 st.divider()
 
-# --------------------------
-# Sezione 2: Analisi Relazionale (Scatter Plot a Bolle)
-# --------------------------
-st.header("🫧 Analisi Efficienza e Relazioni")
-
-col_sel1, col_sel2, col_sel3 = st.columns(3)
-with col_sel1:
-    x_axis = st.selectbox("Asse X (Orizzontale):", stats_columns, index=0)
-with col_sel2:
-    default_y = stats_columns.index('Punti All Time (dal 2011/12)') if 'Punti All Time (dal 2011/12)' in stats_columns else 1
-    y_axis = st.selectbox("Asse Y (Verticale):", stats_columns, index=default_y)
-with col_sel3:
-    default_size = stats_columns.index('Mete All Time (dal 2011/12)') if 'Mete All Time (dal 2011/12)' in stats_columns else 2
-    size_axis = st.selectbox("Dimensione Bolla:", stats_columns, index=default_size)
-
-df_scatter = df[(df[x_axis] > 0) | (df[y_axis] > 0) | (df[size_axis] > 0)]
-
-fig_scatter = px.scatter(
-    df_scatter, x=x_axis, y=y_axis, size=size_axis, color=size_axis, 
-    color_continuous_scale="Viridis", hover_name="Nome Giocatore",
-    hover_data={x_axis: True, y_axis: True, size_axis: True},
-    title=f"Relazione tra {x_axis} e {y_axis}"
-)
-
-fig_scatter.update_traces(marker=dict(sizeref=2.*max(df_scatter[size_axis])/(40.**2), sizemin=4))
-fig_scatter.update_layout(height=600, coloraxis_showscale=True)
-st.plotly_chart(fig_scatter, use_container_width=True)
-
-st.divider()
 
 # --------------------------
-# Sezione 3: Confronto Giocatori (Faceted Bar Chart)
+# Sezione 2: Confronto Giocatori (Faceted Bar Chart)
 # --------------------------
 st.header("🎯 Analisi e Confronto Giocatori")
 st.markdown("Seleziona due o più giocatori per confrontarli.")
@@ -157,3 +128,35 @@ if giocatori_selezionati:
     st.plotly_chart(fig_facets, use_container_width=True)
 else:
     st.info("👆 Cerca e seleziona almeno un giocatore qui sopra per visualizzare il grafico di confronto.")
+
+st.divider()
+
+# --------------------------
+# Sezione 3: Analisi Relazionale (Scatter Plot a Bolle)
+# --------------------------
+st.header("🫧 Analisi Efficienza e Relazioni")
+
+col_sel1, col_sel2, col_sel3 = st.columns(3)
+with col_sel1:
+    x_axis = st.selectbox("Asse X (Orizzontale):", stats_columns, index=0)
+with col_sel2:
+    default_y = stats_columns.index('Punti All Time (dal 2011/12)') if 'Punti All Time (dal 2011/12)' in stats_columns else 1
+    y_axis = st.selectbox("Asse Y (Verticale):", stats_columns, index=default_y)
+with col_sel3:
+    default_size = stats_columns.index('Mete All Time (dal 2011/12)') if 'Mete All Time (dal 2011/12)' in stats_columns else 2
+    size_axis = st.selectbox("Dimensione Bolla:", stats_columns, index=default_size)
+
+df_scatter = df[(df[x_axis] > 0) | (df[y_axis] > 0) | (df[size_axis] > 0)]
+
+fig_scatter = px.scatter(
+    df_scatter, x=x_axis, y=y_axis, size=size_axis, color=size_axis, 
+    color_continuous_scale="Viridis", hover_name="Nome Giocatore",
+    hover_data={x_axis: True, y_axis: True, size_axis: True},
+    title=f"Relazione tra {x_axis} e {y_axis}"
+)
+
+fig_scatter.update_traces(marker=dict(sizeref=2.*max(df_scatter[size_axis])/(40.**2), sizemin=4))
+fig_scatter.update_layout(height=600, coloraxis_showscale=True)
+st.plotly_chart(fig_scatter, use_container_width=True)
+
+st.divider()
